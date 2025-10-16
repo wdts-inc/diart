@@ -53,16 +53,8 @@ class SpeakerEmbedding:
             inputs = rearrange(inputs, "batch sample channel -> batch channel sample")
             if weights is not None:
                 weights = self.weights_formatter.cast(weights).to(self.device)
-                batch_size, _, num_speakers = weights.shape
-                inputs = inputs.repeat(1, num_speakers, 1)
-                weights = rearrange(weights, "batch frame spk -> (batch spk) frame")
-                inputs = rearrange(inputs, "batch spk sample -> (batch spk) 1 sample")
-                output = rearrange(
-                    self.model(inputs, weights),
-                    "(batch spk) feat -> batch spk feat",
-                    batch=batch_size,
-                    spk=num_speakers,
-                )
+                weights = rearrange(weights, "batch frame spk -> batch spk frame")
+                output = self.model(inputs, weights)
             else:
                 output = self.model(inputs)
             return output.squeeze().cpu()
